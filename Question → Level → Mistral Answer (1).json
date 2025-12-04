@@ -1,0 +1,117 @@
+{
+  "name": "Question → Level → Mistral Answer",
+  "nodes": [
+    {
+      "parameters": {
+        "public": true,
+        "initialMessages": "Hi there! 👋\n\nWelcome! I'm your AI assistant.\n\n📝 **Please ask your question first**, and then you'll be able to choose your preferred knowledge level (Beginner, Intermediate, or Expert) to get a customized answer!\n\nGo ahead and type your question below 👇",
+        "options": {
+          "customCss": ":root {\n  --primary-color: #007bff;\n  --hover-color: #0056b3;\n  --button-radius: 8px;\n}\n\n/* Style difficulty level buttons */\n.rchat-message-text > p {\n  margin: 8px 0;\n}\n\n/* Make numbered items look like buttons */\n.rchat-message-text {\n  display: flex;\n  flex-direction: column;\n  gap: 8px;\n}\n\n/* Target the numbered items */\n.rchat-message-text > p:has(strong) {\n  cursor: pointer;\n  padding: 12px 16px;\n  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);\n  color: white;\n  border-radius: var(--button-radius);\n  transition: all 0.3s ease;\n  user-select: none;\n  border: none;\n  font-weight: 500;\n  display: block;\n  text-align: left;\n}\n\n.rchat-message-text > p:has(strong):hover {\n  transform: translateY(-2px);\n  box-shadow: 0 8px 16px rgba(0,0,0,0.2);\n  background: linear-gradient(135deg, #764ba2 0%, #667eea 100%);\n}\n\n.rchat-message-text > p:has(strong):active {\n  transform: translateY(0);\n  box-shadow: 0 2px 4px rgba(0,0,0,0.1);\n}"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.chatTrigger",
+      "typeVersion": 1.4,
+      "position": [
+        -448,
+        -64
+      ],
+      "id": "1a35cce8-a932-4d30-9d94-5d32edb8a13e",
+      "name": "When chat message received",
+      "webhookId": "9f9a1781-c72c-4773-9718-8a4feebcb15a"
+    },
+    {
+      "parameters": {
+        "options": {
+          "systemMessage": "You are a helpful AI assistant with a two-step interaction process.\n\nIMPORTANT OUTPUT FORMAT:\nWhen generating answers with code, use this exact JSON format:\n{\n  \"step\": \"level_selection\" OR \"answer\",\n  \"level\": \"[Beginner/Intermediate/Expert]\",\n  \"context\": \"[Explanation or context line about the code]\",\n  \"language\": \"[programming language, e.g., python, javascript, cpp]\",\n  \"code\": \"[Complete code here without any markdown or triple backticks]\"\n}\n\nSTEP 1 - FIRST MESSAGE (User's Question):\nIf the message does NOT contain a difficulty level (1, 2, 3, or \"Beginner\", \"Intermediate\", \"Expert\"), respond with JSON:\n{\n  \"step\": \"level_selection\",\n  \"question\": \"[The user's question]\",\n  \"message\": \"Thank you! I received your question. Now please select your preferred knowledge level:\n1️⃣ **Beginner** - Simple explanations with everyday examples\n2️⃣ **Intermediate** - Balanced depth with technical details\n3️⃣ **Expert** - Advanced concepts and in-depth analysis\"\n}\n\nSTEP 2 - SECOND MESSAGE (User Selects Level):\nIf message DOES contain a difficulty level, respond using the OUTPUT FORMAT above.\n\nFORMATTING RULES:\n1. \"context\" = ONE LINE explaining what the code does\n2. \"code\" = Clean code WITHOUT markdown formatting, WITHOUT triple backticks (```), WITHOUT language identifier\n3. \"language\" = lowercase language name for syntax highlighting\n\nGUIDELINES BY LEVEL:\nBEGINNER: Simple language, everyday examples, avoid jargon, add comments in code\nINTERMEDIATE: Balanced technical terminology, practical examples, moderate code comments\nEXPERT: Technical terminology, advanced concepts, minimal but clear code comments"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3,
+      "position": [
+        -240,
+        -64
+      ],
+      "id": "3480b3c8-1e50-4bb4-b40f-54b9bd3f6ed0",
+      "name": "AI Agent"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatMistralCloud",
+      "typeVersion": 1,
+      "position": [
+        -336,
+        96
+      ],
+      "id": "0f62d1f9-4551-4cde-ae21-4a2ce0fffe63",
+      "name": "Mistral Cloud Chat Model",
+      "credentials": {
+        "mistralCloudApi": {
+          "id": "p85Fk5mvFoAtwRJG",
+          "name": "Mistral Cloud account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "contextWindowLength": 25
+      },
+      "type": "@n8n/n8n-nodes-langchain.memoryBufferWindow",
+      "typeVersion": 1.3,
+      "position": [
+        -176,
+        96
+      ],
+      "id": "2fada3d4-6214-46c9-b9fa-ab8ef9939c7b",
+      "name": "Simple Memory"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "When chat message received": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Mistral Cloud Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Simple Memory": {
+      "ai_memory": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "dc075cc1-a797-4eaa-979d-e60068e50014",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "31b4f855788cef45cc267a998049565f9a74dee863e2560604ac4ea49e7de2e3"
+  },
+  "id": "1dvSq9P405a6uJtc",
+  "tags": []
+}
